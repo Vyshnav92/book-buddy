@@ -5,3 +5,4 @@
 ## Progress log
 - Step 2: repo initialised
 - Step 4: Book model (SQLite via SQLAlchemy) and CRUD API: GET/POST /api/books, PATCH/DELETE /api/books/<id>. Hitting the last page auto-completes a book.
+- Step 5: React frontend scaffolded with Vite
