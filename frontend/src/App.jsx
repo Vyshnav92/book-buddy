@@ -4,8 +4,10 @@ import "./App.css";
 const API = "http://127.0.0.1:5000/api";
 const EMPTY_FORM = { title: "", author: "", genre: "", status: "wishlist", total_pages: "" };
 
-function BookCard({ book, onUpdate }) {
+function BookCard({ book, onUpdate, onSaveReview }) {
   const [page, setPage] = useState(book.current_page);
+  const [rating, setRating] = useState(book.rating || 0);
+  const [notes, setNotes] = useState(book.notes || "");
 
   return (
     <div className="card">
@@ -20,6 +22,28 @@ function BookCard({ book, onUpdate }) {
         <input type="number" value={page} onChange={(e) => setPage(e.target.value)} />
         <button onClick={() => onUpdate(book.id, page)}>Update</button>
       </div>
+
+      {book.status === "completed" && (
+        <div className="review">
+          <div>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <span
+                key={n}
+                className={n <= rating ? "star on" : "star"}
+                onClick={() => setRating(n)}
+              >
+                ★
+              </span>
+            ))}
+          </div>
+          <textarea
+            placeholder="Your notes about this book..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+          <button onClick={() => onSaveReview(book.id, rating, notes)}>Save review</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -66,6 +90,15 @@ function App() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ current_page: Number(page) }),
+    });
+    loadBooks();
+  }
+
+  async function saveReview(id, rating, notes) {
+    await fetch(`${API}/books/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rating: rating || null, notes }),
     });
     loadBooks();
   }
@@ -130,7 +163,7 @@ function App() {
 
 <div className="grid">
   {visibleBooks.map((book) => (
-    <BookCard key={book.id} book={book} onUpdate={updateProgress} />
+    <BookCard key={book.id} book={book} onUpdate={updateProgress} onSaveReview={saveReview} />
   ))}
 </div>
     </div>

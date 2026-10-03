@@ -9,3 +9,4 @@
 - Step 6: First UI: add-book form, book cards with progress bar, and progress update.
 - Step 7: Added filter tabs (All/Reading/Completed/Wishlist). Filtering happens in the browser from the already-loaded list, so no extra API call is needed.
 - Step 8: Added /api/stats (total, count by status, count by genre, % completed = completed books / total books). Frontend shows stat cards and a books-by-genre bar list; stats refresh every time the book list reloads.
+- Step 9: Added star rating (1-5) and personal notes for completed books. Saved through the existing PATCH /api/books/<id> route; no backend change was needed.

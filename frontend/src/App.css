@@ -22,3 +22,8 @@ h1 { color: #0f766e; }
 .genre-row { display: flex; align-items: center; gap: 10px; }
 .genre-name { width: 110px; font-size: 14px; }
 .genre-row .bar { flex: 1; }
+.review { margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee; display: grid; gap: 8px; }
+.star { font-size: 24px; color: #d1d5db; cursor: pointer; }
+.star.on { color: #f59e0b; }
+.review textarea { width: 100%; min-height: 60px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; }
+.review button { padding: 8px; border-radius: 6px; border: none; background: #0f766e; color: white; cursor: pointer; }
