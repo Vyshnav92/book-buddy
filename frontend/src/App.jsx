@@ -1,122 +1,95 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+const API = "http://127.0.0.1:5000/api";
+const EMPTY_FORM = { title: "", author: "", genre: "", status: "wishlist", total_pages: "" };
+
+function BookCard({ book, onUpdate }) {
+  const [page, setPage] = useState(book.current_page);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <div className="card">
+      <h3>{book.title}</h3>
+      <p>{book.author}</p>
+      <span className="badge">{book.genre}</span> <span className="badge">{book.status}</span>
+      <div className="bar">
+        <div className="bar-fill" style={{ width: `${book.percent}%` }}></div>
+      </div>
+      <small>{book.current_page} / {book.total_pages} pages ({book.percent}%)</small>
+      <div className="row">
+        <input type="number" value={page} onChange={(e) => setPage(e.target.value)} />
+        <button onClick={() => onUpdate(book.id, page)}>Update</button>
+      </div>
+    </div>
+  );
 }
 
-export default App
+function App() {
+  const [books, setBooks] = useState([]);
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  async function loadBooks() {
+    const res = await fetch(`${API}/books`);
+    const data = await res.json();
+    setBooks(data);
+  }
+
+  useEffect(() => {
+    loadBooks();
+  }, []);
+
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    await fetch(`${API}/books`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...form,
+        genre: form.genre || "Other",
+        total_pages: Number(form.total_pages) || 0,
+      }),
+    });
+    setForm(EMPTY_FORM);
+    loadBooks();
+  }
+
+  async function updateProgress(id, page) {
+    await fetch(`${API}/books/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ current_page: Number(page) }),
+    });
+    loadBooks();
+  }
+
+  return (
+    <div className="container">
+      <h1>Book Buddy</h1>
+
+      <form className="form" onSubmit={handleSubmit}>
+        <input name="title" placeholder="Title" value={form.title} onChange={handleChange} required />
+        <input name="author" placeholder="Author" value={form.author} onChange={handleChange} required />
+        <input name="genre" placeholder="Genre" value={form.genre} onChange={handleChange} />
+        <select name="status" value={form.status} onChange={handleChange}>
+          <option value="wishlist">Wishlist</option>
+          <option value="reading">Reading</option>
+          <option value="completed">Completed</option>
+        </select>
+        <input name="total_pages" type="number" placeholder="Total pages" value={form.total_pages} onChange={handleChange} />
+        <button type="submit">Add Book</button>
+      </form>
+
+      <div className="grid">
+        {books.map((book) => (
+          <BookCard key={book.id} book={book} onUpdate={updateProgress} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default App;
