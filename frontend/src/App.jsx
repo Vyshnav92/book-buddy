@@ -27,6 +27,7 @@ function BookCard({ book, onUpdate }) {
 function App() {
   const [books, setBooks] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [filter, setFilter] = useState("all")
 
   async function loadBooks() {
     const res = await fetch(`${API}/books`);
@@ -66,6 +67,9 @@ function App() {
     loadBooks();
   }
 
+  const visibleBooks =
+  filter === "all" ? books : books.filter((b) => b.status === filter);
+
   return (
     <div className="container">
       <h1>Book Buddy</h1>
@@ -83,13 +87,28 @@ function App() {
         <button type="submit">Add Book</button>
       </form>
 
-      <div className="grid">
-        {books.map((book) => (
-          <BookCard key={book.id} book={book} onUpdate={updateProgress} />
-        ))}
-      </div>
+      <div className="tabs">
+  {["all", "reading", "completed", "wishlist"].map((tab) => (
+    <button
+      key={tab}
+      className={filter === tab ? "tab active" : "tab"}
+      onClick={() => setFilter(tab)}
+    >
+      {tab}
+    </button>
+  ))}
+</div>
+
+      {visibleBooks.length === 0 && <p>No books here yet.</p>}
+
+<div className="grid">
+  {visibleBooks.map((book) => (
+    <BookCard key={book.id} book={book} onUpdate={updateProgress} />
+  ))}
+</div>
     </div>
   );
+
 }
 
 export default App;

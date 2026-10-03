@@ -10,3 +10,6 @@ h1 { color: #0f766e; }
 .bar-fill { background: #0f766e; height: 8px; border-radius: 6px; }
 .row { display: flex; gap: 6px; }
 .row input { width: 80px; padding: 4px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab { padding: 6px 14px; border-radius: 20px; border: 1px solid #0f766e; background: white; color: #0f766e; cursor: pointer; text-transform: capitalize; }
+.tab.active { background: #0f766e; color: white; }
