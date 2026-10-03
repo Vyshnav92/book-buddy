@@ -101,6 +101,27 @@ def delete_book(book_id):
     return "", 204
 
 
+@app.route("/api/stats")
+def stats():
+    books = Book.query.all()
+    total = len(books)
+
+    by_status = {s: len([b for b in books if b.status == s]) for s in VALID_STATUSES}
+
+    by_genre = {}
+    for b in books:
+        by_genre[b.genre] = by_genre.get(b.genre, 0) + 1
+
+    percent_completed = round(by_status["completed"] / total * 100) if total else 0
+
+    return jsonify({
+        "total": total,
+        "by_status": by_status,
+        "by_genre": by_genre,
+        "percent_completed": percent_completed,
+    })
+
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

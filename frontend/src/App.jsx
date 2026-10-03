@@ -27,12 +27,15 @@ function BookCard({ book, onUpdate }) {
 function App() {
   const [books, setBooks] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [filter, setFilter] = useState("all")
+  const [filter, setFilter] = useState("all");
+  const [stats, setStats] = useState(null);
 
   async function loadBooks() {
     const res = await fetch(`${API}/books`);
     const data = await res.json();
     setBooks(data);
+    const statsRes = await fetch(`${API}/stats`);
+    setStats(await statsRes.json());
   }
 
   useEffect(() => {
@@ -73,6 +76,30 @@ function App() {
   return (
     <div className="container">
       <h1>Book Buddy</h1>
+
+      {stats && (
+        <div className="stats">
+          <div className="stat"><strong>{stats.total}</strong><span>Total books</span></div>
+          <div className="stat"><strong>{stats.by_status.reading}</strong><span>Reading</span></div>
+          <div className="stat"><strong>{stats.by_status.completed}</strong><span>Completed</span></div>
+          <div className="stat"><strong>{stats.percent_completed}%</strong><span>Completion rate</span></div>
+        </div>
+      )}
+
+      {stats && stats.total > 0 && (
+        <div className="genres">
+          <h3>Books by genre</h3>
+          {Object.entries(stats.by_genre).map(([genre, count]) => (
+            <div key={genre} className="genre-row">
+              <span className="genre-name">{genre}</span>
+              <div className="bar">
+                <div className="bar-fill" style={{ width: `${(count / stats.total) * 100}%` }}></div>
+              </div>
+              <span>{count}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <form className="form" onSubmit={handleSubmit}>
         <input name="title" placeholder="Title" value={form.title} onChange={handleChange} required />
