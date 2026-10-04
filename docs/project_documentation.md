@@ -32,15 +32,14 @@ I kept the scope small on purpose: the four required features first, a working p
 ## 3. Architecture
 
 ```
-Browser (React)
-   |  fetch /api/...
-   v
-Flask (gunicorn in Docker, `python app.py` in dev)
-   |-- SQLAlchemy --> SQLite  (backend/instance/books.db)
-   |
-   |  only when a saved review has 100+ characters
-   v
-n8n Cloud webhook --> OpenAI gpt-4o-mini --> short summary --> back to Flask --> saved on the book
+React frontend -- /api requests --> Flask backend
+                                      |
+                                      +-- SQLAlchemy --> SQLite
+                                      |                 backend/instance/books.db
+                                      |
+                                      +-- For reviews of 100+ characters:
+                                          n8n webhook --> OpenAI gpt-4o-mini
+                                          summary returns to Flask and is saved
 ```
 
 In development, React (port 5173) and Flask (port 5000) run separately, and CORS is enabled in Flask. In Docker, the React app is built into static files and Flask serves them, so everything lives at one address (http://localhost:5000) and the frontend uses the relative path `/api`.
@@ -206,13 +205,10 @@ Honest list of what's missing:
 
 - No user login, so there is one shared list.
 - No automated tests. Everything was tested by hand (checklist below).
-- The UI has no delete button, although the API supports it.
 - Title, author and total pages can't be edited after adding a book.
-- Genre is free text, so spelling differences split the stats. A dropdown would fix this.
 - If the API is unreachable, the page shows no error message.
 - All frontend code is in `App.jsx`. It would be cleaner split into separate component files, with the API calls in their own module.
 - The AI call happens inside the save request, so saving a long review takes a few seconds.
-- Not hosted online. It runs through Docker, and the same image could be deployed to a server such as AWS EC2.
 
 What I'd do next: split the frontend into components, add a delete button and an error banner, add backend tests with pytest, then user login and a reading-over-time graph.
 

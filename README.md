@@ -27,7 +27,6 @@ Full project documentation: [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMEN
 
 - Docker setup: one image builds the React app and serves it from Flask
 - The n8n workflow is exported in `docs/n8n-workflow.json` so it can be imported and inspected
-- A delete endpoint exists in the API (`DELETE /api/books/<id>`), but there is no delete button in the UI yet
 
 ## Tech stack
 
