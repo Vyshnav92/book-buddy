@@ -4,7 +4,7 @@ A small full-stack app for tracking what you read. Add books, update how far you
 
 Built for the Sayone Tech Full Stack (Fresher) coding task.
 
-Demo video: add the link here  
+Demo video: [Watch the Book Buddy demo](https://www.loom.com/share/997017a4718e47c5967d1185e628c515)  
 Full project documentation: [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md)
 
 ## Features
