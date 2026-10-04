@@ -1,0 +1,141 @@
+{
+  "name": "Sayone AI integration",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "=book-summary",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ddb4c764-a49b-4c0e-a8c5-6474dcc1b71b",
+      "name": "Webhook",
+      "webhookId": "e53ce600-10e9-49fd-83c0-1edddbd39969"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You condense reading-journal notes into a very short blurb.\n\nRating: {{ $json.body.rating }} out of 5\nMy notes: {{ $json.body.notes }}\n\nWrite the blurb in exactly this format, in plain words, using ONLY what my notes say. Do not copy my sentences; shorten and reword them. Keep the whole blurb under 40 words. Do not mention the book's title or author.\n\nVerdict: one short sentence with my main opinion.\nBest for: who would enjoy the book, only if my notes say so.\nSkip if: who should skip it, only if my notes say so.\n\nLeave out any line that my notes do not support. Do not add facts about the plot, characters or author. If the rating is empty, ignore it. If the notes are empty, reply exactly: No notes to summarize.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        0
+      ],
+      "id": "eaa1f2e7-8c73-45e8-83d1-3556a103d884",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "7dbcf4b5-ad42-47d7-b601-50e5fd1b34c5",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"summary\": $json.text } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        592,
+        0
+      ],
+      "id": "acde5560-2bd9-4c63-b492-8af4e689238e",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "body": {
+            "title": "test1",
+            "author": "test1",
+            "rating": 4,
+            "notes": "I picked this up expecting a typical self-help book, but it was more practical than I thought. The chapters on habit stacking and environment design were the best part, and I started using them the same week. The last third repeats a lot of earlier ideas, so it dragged a bit. I'd recommend it to students and people starting a new job who want simple routines, but if you've already read a lot on productivity, you can probably skip it."
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "72ae28ec-85bb-4ed4-9065-785688842f1f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dd400f7ac8558958f28ecfc80f405b3baca1753d8de04e78fa65c9f865b88ea5"
+  },
+  "nodeGroups": [],
+  "id": "Y3AhDsW22D14ERXU",
+  "tags": []
+}
