@@ -1,4 +1,7 @@
+import os
 from datetime import datetime
+import requests
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -9,6 +12,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///books.db"
 db = SQLAlchemy(app)
 
 VALID_STATUSES = ["reading", "completed", "wishlist"]
+
+load_dotenv()
+N8N_SUMMARY_URL = os.getenv("N8N_SUMMARY_URL")
+MIN_NOTES_LENGTH = 100
 
 
 class Book(db.Model):
@@ -21,6 +28,7 @@ class Book(db.Model):
     current_page = db.Column(db.Integer, default=0)
     rating = db.Column(db.Integer)
     notes = db.Column(db.Text)
+    ai_summary = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.now)
     finished_at = db.Column(db.DateTime)
 
@@ -37,9 +45,27 @@ class Book(db.Model):
             "percent": percent,
             "rating": self.rating,
             "notes": self.notes,
+            "ai_summary": self.ai_summary,
             "created_at": self.created_at.isoformat(),
             "finished_at": self.finished_at.isoformat() if self.finished_at else None,
         }
+
+
+def generate_summary(book):
+    """Ask the n8n workflow for a short summary of the book's notes.
+    Returns the summary text, or None if it can't be generated."""
+    if not N8N_SUMMARY_URL:
+        return None
+    try:
+        response = requests.post(
+            N8N_SUMMARY_URL,
+            json={"rating": book.rating, "notes": book.notes},
+            timeout=30,
+        )
+        response.raise_for_status()
+        return response.json().get("summary")
+    except (requests.RequestException, ValueError):
+        return None
 
 
 @app.route("/api/health")
@@ -89,7 +115,15 @@ def update_book(book_id):
         book.status = "completed"
     if book.status == "completed" and not book.finished_at:
         book.finished_at = datetime.now()
-    db.session.commit()
+    db.session.commit()  # save everything first so the notes are never lost
+
+    if "notes" in data or "rating" in data:
+        if book.notes and len(book.notes.strip()) >= MIN_NOTES_LENGTH:
+            book.ai_summary = generate_summary(book)
+        else:
+            book.ai_summary = None
+        db.session.commit()
+
     return jsonify(book.to_dict())
 
 
