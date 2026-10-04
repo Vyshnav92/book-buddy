@@ -8,6 +8,16 @@ function BookCard({ book, onUpdate, onSaveReview }) {
   const [page, setPage] = useState(book.current_page);
   const [rating, setRating] = useState(book.rating || 0);
   const [notes, setNotes] = useState(book.notes || "");
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await onSaveReview(book.id, rating, notes);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="card">
@@ -37,11 +47,21 @@ function BookCard({ book, onUpdate, onSaveReview }) {
             ))}
           </div>
           <textarea
-            placeholder="Your notes about this book..."
+            placeholder="Write a detailed review: what you liked, what you didn't, and who would enjoy this book..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
-          <button onClick={() => onSaveReview(book.id, rating, notes)}>Save review</button>
+          <small>Write 100+ characters to get an AI summary.</small>
+          <button onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save notes & rating"}
+          </button>
+
+          {book.ai_summary && (
+            <div className="summary">
+              <strong>AI summary</strong>
+              <p>{book.ai_summary}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -100,7 +120,7 @@ function App() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ rating: rating || null, notes }),
     });
-    loadBooks();
+    await loadBooks();
   }
 
   const visibleBooks =
