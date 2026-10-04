@@ -6,7 +6,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
-app = Flask(__name__)
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend", "dist")
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
 CORS(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///books.db"
 db = SQLAlchemy(app)
@@ -66,6 +67,11 @@ def generate_summary(book):
         return response.json().get("summary")
     except (requests.RequestException, ValueError):
         return None
+
+
+@app.route("/")
+def index():
+    return app.send_static_file("index.html")
 
 
 @app.route("/api/health")
@@ -156,7 +162,8 @@ def stats():
     })
 
 
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)

@@ -1,0 +1,23 @@
+# Git and editor files
+.git
+.gitignore
+.vscode
+.idea
+
+# Dependencies and build output (rebuilt inside the image)
+**/node_modules
+frontend/dist
+**/__pycache__
+**/*.pyc
+**/venv
+**/.venv
+
+# Local database and secrets: never bake these into the image
+**/instance
+**/*.db
+**/.env
+**/.env.*
+
+# Not needed at runtime
+docs
+README.md
